@@ -26,6 +26,6 @@ A sales group can consists of more than one broker, while each broker can be ass
 */
 
 -- TODO: write SQL script to create a database tables according to the requirements
-create table broker();
-create table sales_group();
-create table broker_sales_group();
+create table broker(id bigint, username varchar (255));
+create table sales_group(id bigint);
+create table broker_sales_group(id bigint);
