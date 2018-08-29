@@ -1,7 +1,10 @@
 package com.bobocode;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * {@link AccountDbInitializer} provides an API that allow to initialize (create) an Account table in the database
@@ -28,6 +31,18 @@ public class AccountDbInitializer {
      * @throws SQLException
      */
     public void init() throws SQLException {
-        throw new UnsupportedOperationException("It's your job to make it work!"); // todo
+        try (Connection connection = dataSource.getConnection()) {
+            Statement statement = connection.createStatement();
+            statement
+                    .execute("create table  account(id bigint, " +
+                            "email varchar (255) not null," +
+                            "first_name varchar (255) not null," +
+                            "last_name varchar (255) not null," +
+                            "gender varchar (255) not null," +
+                            "birthday DATE not null," +
+                            "balance DECIMAL (19, 4)," +
+                            "creation_time TIMESTAMP not null default now()," +
+                            "constraint account_pk primary key (id), constraint account_email_uq unique (email));");
+        }
     }
 }
