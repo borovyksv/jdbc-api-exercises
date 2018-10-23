@@ -38,12 +38,12 @@ public class ProductDaoTest {
         try (Connection connection = dataSource.getConnection()) {
             Statement createTableStatement = connection.createStatement();
             createTableStatement.execute("CREATE TABLE IF NOT EXISTS products (\n" +
-                    "  id               LONG AUTO_INCREMENT NOT NULL,\n" +
-                    "  name             VARCHAR(255) NOT NULL,\n" +
-                    "  producer         VARCHAR(255) NOT NULL,\n" +
-                    "  price            DECIMAL(19, 4),\n" +
-                    "  expiration_date  TIMESTAMP NOT NULL,\n" +
-                    "  creation_time    TIMESTAMP NOT NULL DEFAULT now(),\n" +
+                    "  id            SERIAL NOT NULL,\n" +
+                    "  name     VARCHAR(255) NOT NULL,\n" +
+                    "  producer     VARCHAR(255) NOT NULL,\n" +
+                    "  price       DECIMAL(19, 4),\n" +
+                    "  expiration_date      TIMESTAMP NOT NULL,\n" +
+                    "  creation_time TIMESTAMP NOT NULL DEFAULT now(),\n" +
                     "\n" +
                     "  CONSTRAINT products_pk PRIMARY KEY (id)\n" +
                     ");\n" +
