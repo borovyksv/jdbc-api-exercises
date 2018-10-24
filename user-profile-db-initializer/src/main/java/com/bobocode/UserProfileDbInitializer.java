@@ -27,8 +27,8 @@ public class UserProfileDbInitializer {
     public void init() throws SQLException {
         String createTablesSql = FileReader.readWholeFileFromResources(TABLE_INITIALIZATION_SQL_FILE);
 
-        try (Connection connection = dataSource.getConnection()) {
-            Statement statement = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(createTablesSql);
         }
     }
