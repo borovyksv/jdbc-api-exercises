@@ -2,12 +2,15 @@ package com.bobocode.dao;
 
 import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
+import com.bobocode.util.JdbcUtil;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ProductDaoImpl implements ProductDao {
     private static final String SAVE_PRODUCT_SQL = "INSERT INTO products (name, producer, price, expiration_date) VALUES (?, ?, ?, ?)";
@@ -26,57 +29,43 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public void save(Product product) {
         Objects.requireNonNull(product);
-        try (Connection conn = dataSource.getConnection()) {
-            saveProduct(product, conn);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error saving product: " + product, e);
-        }
+        consumeConnection(connection ->
+                saveProduct(product, connection));
     }
 
     @Override
     public List<Product> findAll() {
-        try (Connection conn = dataSource.getConnection()) {
-            return findAllProducts(conn);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error fetching all products", e);
-        }
+        return applyConnection(this::findAllProducts);
     }
 
     @Override
     public Product findOne(Long id) {
         Objects.requireNonNull(id);
-        try (Connection conn = dataSource.getConnection()) {
-            return findOneProduct(id, conn);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error fetching one product", e);
-        }
+        return applyConnection(connection ->
+                findOneProduct(id, connection));
     }
 
     @Override
     public void update(Product product) {
         throwIfProductIdIsNull(product);
-        try (Connection conn = dataSource.getConnection()) {
-            updateProduct(product, conn);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error updating product: " + product, e);
-        }
+        consumeConnection(connection ->
+            updateProduct(product, connection));
     }
 
     @Override
     public void remove(Product product) {
         throwIfProductIdIsNull(product);
-        try (Connection conn = dataSource.getConnection()) {
-            removeProduct(product, conn);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error removing product: " + product, e);
-        }
+        consumeConnection(connection ->
+            removeProduct(product, connection));
     }
 
-    private void saveProduct(Product product, Connection conn) throws SQLException {
+    private void saveProduct(Product product, Connection conn) {
         try (PreparedStatement prepStatement = conn.prepareStatement(SAVE_PRODUCT_SQL, Statement.RETURN_GENERATED_KEYS)) {
             fillInsertProductPreparedStatement(product, prepStatement);
             executeUpdate(prepStatement);
             updateProductId(product, prepStatement);
+        } catch (SQLException e) {
+            throw new DaoOperationException("Error saving product: " + product, e);
         }
     }
 
@@ -183,6 +172,14 @@ public class ProductDaoImpl implements ProductDao {
                 .expirationDate(rs.getTimestamp(5).toLocalDateTime().toLocalDate())
                 .creationTime(rs.getTimestamp(6).toLocalDateTime())
                 .build();
+    }
+
+    private void consumeConnection(Consumer<Connection> consumer) {
+        JdbcUtil.consumeConnection(dataSource, consumer);
+    }
+
+    private  <T> T applyConnection(Function<Connection, T> function) {
+        return JdbcUtil.applyConnection(dataSource, function);
     }
 
     private void throwIfNoProductFound(ResultSet rs, Long id) throws SQLException {
