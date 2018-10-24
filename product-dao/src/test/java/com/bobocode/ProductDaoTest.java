@@ -21,6 +21,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import static com.bobocode.util.JdbcUtil.consumeStatement;
+import static com.bobocode.util.JdbcUtil.executeSafely;
 import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
@@ -35,20 +37,18 @@ public class ProductDaoTest {
     }
 
     private static void createAccountTable(DataSource dataSource) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            Statement createTableStatement = connection.createStatement();
-            createTableStatement.execute("CREATE TABLE IF NOT EXISTS products (\n" +
-                    "  id            SERIAL NOT NULL,\n" +
-                    "  name     VARCHAR(255) NOT NULL,\n" +
-                    "  producer     VARCHAR(255) NOT NULL,\n" +
-                    "  price       DECIMAL(19, 4),\n" +
-                    "  expiration_date      TIMESTAMP NOT NULL,\n" +
-                    "  creation_time TIMESTAMP NOT NULL DEFAULT now(),\n" +
-                    "\n" +
-                    "  CONSTRAINT products_pk PRIMARY KEY (id)\n" +
-                    ");\n" +
-                    "\n");
-        }
+        consumeStatement(dataSource, statement ->
+                executeSafely(statement,"CREATE TABLE IF NOT EXISTS products (\n" +
+                "  id               LONG AUTO_INCREMENT NOT NULL,\n" +
+                "  name             VARCHAR(255) NOT NULL,\n" +
+                "  producer         VARCHAR(255) NOT NULL,\n" +
+                "  price            DECIMAL(19, 4),\n" +
+                "  expiration_date  TIMESTAMP NOT NULL,\n" +
+                "  creation_time    TIMESTAMP NOT NULL DEFAULT now(),\n" +
+                "\n" +
+                "  CONSTRAINT products_pk PRIMARY KEY (id)\n" +
+                ");\n" +
+                "\n"));
     }
 
     private Product generateTestProduct() {

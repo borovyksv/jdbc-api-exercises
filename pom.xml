@@ -13,6 +13,7 @@
         <module>jdbc-util</module>
         <module>jdbc-account-data</module>
         <module>product-dao</module>
+        <module>db-initializer-common</module>
         <module>account-db-initializer</module>
         <module>wall-street-db-initializer</module>
         <module>user-profile-db-initializer</module>
